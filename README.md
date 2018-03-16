@@ -43,9 +43,11 @@ const nodes = [
     { host: "localhost", port: 80, region: "asia", password: "youshallnotpass" }
 ];
 
-const manager = new PlayerManager(client, nodes, {
+client.on('ready', () => {
+  client.player = new PlayerManager(client, nodes, {
     user: client.user.id, // Client id
-    shards: nodeCount // Number of Lavalink nodes
+    shards: 1 // Number of Lavalink nodes
+  });
 });
 ```
 Resolving tracks using LavaLink REST API
