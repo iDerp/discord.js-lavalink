@@ -14,7 +14,7 @@ class MusicClient extends Client {
         this.once("ready", this._ready.bind(this));
     }
 
-    _ready() {
+    _ready() { // Assign the PlayerManager to player once the bot is ready.
         this.player = new PlayerManager(this, config.nodes, {
             user: this.user.id,
             shards: 1
@@ -41,38 +41,38 @@ client.on("message", async message => {
         if (!message.member || !message.member.voiceChannel || !message.member.voiceChannelID) return message.reply("Must be in a voice channel");
         let [...track] = args;
         track = track.join(" ");
-        const [song] = await getSong(track);
+        const [song] = await getSong(track); // Uses the getSong function to search the best YT result.
         const player = await client.player.join({
             guild: message.guild.id,
             channel: message.member.voiceChannelID,
-            host: "localhost"
-        }, { selfdeaf: true });
+            host: "localhost" // If you are not hosting lavalink locally, change this to the IP
+        }, { selfdeaf: true }); // Self Deafening is good for saving bandwidth
         if (!player) throw "No player found...";
         player.play(song.track);
         player.on("error", console.error);
-        player.once("end", data => {
+        player.once("end", data => { // Called once the song ends by any means
             if (data.reason === "REPLACED") return;
             message.channel.send("Song has ended...");
         });
         return message.reply(`Now playing: **${song.info.title}** by *${song.info.author}*`);
     }
     if (command === "leave") {
-        await client.player.leave(message.guild.id);
+        await client.player.leave(message.guild.id); // Leaves the VC
         return message.reply("Sucessfully left the voice channel");
     }
     if (command === "pause") {
-        const player = client.player.get(message.guild.id);
+        const player = client.player.get(message.guild.id); // Fetch the player for the channel
         if (!player) return message.reply("No lavalink player found");
-        await player.pause(true);
+        await player.pause(true); // Pauses the music. The await is needed so it doesn't continue before its actually paused
         return message.reply("Paused the music");
     }
     if (command === "resume") {
-        const player = client.player.get(message.guild.id);
+        const player = client.player.get(message.guild.id); // Fetch the player for the channel
         if (!player) return message.reply("No lavalink player found");
-        await player.pause(false);
+        await player.pause(false); // Unpauses the music
         return message.reply("Resumed the music");
     }
-    if (command === "eval" || command === "ev") {
+    if (command === "eval" || command === "ev") { // Eval isint necessary for lavalink, this is for testing.
         if (message.author.id !== config.owner) return;
         try {
             const code = args.join(" ");
@@ -84,7 +84,7 @@ client.on("message", async message => {
     }
 });
 
-async function clean(text) {
+async function clean(text) { // Cleanup eval results
     if (text instanceof Promise || (Boolean(text) && typeof text.then === "function" && typeof text.catch === "function")) text = await text;
     if (typeof text !== "string") text = inspect(text, { depth: 0, showHidden: false });
     text = text.replace(/`/g, `\`${String.fromCharCode(8203)}`).replace(/@/g, `@${String.fromCharCode(8203)}`);
@@ -93,7 +93,7 @@ async function clean(text) {
 
 async function getSong(string) {
     const res = await snekfetch.get(`http://localhost:2333/loadtracks?identifier=${string}`)
-        .set("Authorization", "youshallnotpass")
+        .set("Authorization", "youshallnotpass") // This can be changed in the lavalink config, but theres no need if its running locally
         .catch(err => {
             console.error(err);
             return null;
@@ -103,6 +103,6 @@ async function getSong(string) {
     return res.body;
 }
 
-process.on("unhandledRejection", console.log)
+process.on("unhandledRejection", console.log) // Error Logging
     .on("error", console.error)
     .on("warn", console.warn);
