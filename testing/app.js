@@ -63,7 +63,7 @@ client.on("message", async message => {
     if (command === "pause") {
         const player = client.player.get(message.guild.id); // Fetch the player for the channel
         if (!player) return message.reply("No lavalink player found");
-        await player.pause(true); // Pauses the music. The await is needed so it doesn't continue before its actually paused
+        await player.pause(true); // Pauses the music.
         return message.reply("Paused the music");
     }
     if (command === "resume") {
